@@ -61,6 +61,7 @@ module configuration (
     // Target IBI
     output logic ibi_enable_o,
     output logic [2:0] ibi_retry_num_o,
+    output logic ibi_mdb_support_o,
 
     input logic set_mwl_i,
     input logic set_mrl_i,
@@ -85,6 +86,9 @@ module configuration (
   // Bus Configuration
   logic i2c_dev_present;
   assign i2c_dev_present = hwif_out_i.I3CBase.HC_CONTROL.I2C_DEV_PRESENT.value;
+
+  // Expose configurable capabilities
+  assign ibi_mdb_support_o = hwif_out_i.I3CBase.HC_CAPABILITIES.IBI_MDB_SUPPORT_PENDING_READ_EN.value;
 
   // Disables the TTI
   logic target_xact_enable;

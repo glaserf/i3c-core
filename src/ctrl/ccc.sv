@@ -283,6 +283,10 @@ module ccc
     // I3C_DIRECT_GETMXDS
     input logic get_mxds_i,
 
+    // IBI MDB Support, controlled by FW (CSR), used by
+    // I3C_DIRECT_GETCAPS
+    input logic ibi_mdb_support_i,
+
     // (formerly GETHDRCAPS) Get Optional Feature Capabilities
     // I3C_DIRECT_GETCAPS
 
@@ -904,7 +908,7 @@ module ccc
             end
             8'd1: begin
               // GETCAP3
-              tx_data[6] = 1'b1; // We support IBI MDB Support (see Sect. 5.1.6.2.2)
+              tx_data[6] = ibi_mdb_support_i; // FW-configurable IBI MDB Support (Sect. 5.1.6.2.2)
               tx_data[3] = 1'b1; // We support an optional defining byte for GETCAPS
             end
             default: ; // Already covered outside of this case tree

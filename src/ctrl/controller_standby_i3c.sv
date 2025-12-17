@@ -94,6 +94,7 @@ module controller_standby_i3c
     input logic [63:0] daa_unique_response_i,
     input logic ibi_enable_i,
     input logic [2:0] ibi_retry_num_i,
+    input logic ibi_mdb_support_i,
 
     output logic [7:0] rst_action_o,
     output logic rst_action_valid_o,
@@ -548,6 +549,7 @@ module controller_standby_i3c
       .set_brgtgt_o              (set_brgtgt),
       .get_mxds_i                (get_mxds),
       .get_status_done_o,
+      .ibi_mdb_support_i,
       .target_reset_detect_i     (target_reset_detect),
       .peripheral_reset_done_i,
       .rstact_armed_o            (rstact_armed),

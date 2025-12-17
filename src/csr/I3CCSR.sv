@@ -435,6 +435,12 @@ module I3CCSR (
                 struct packed{
                     logic next;
                     logic load_next;
+                } IBI_MDB_SUPPORT_PENDING_READ_EN;
+            } HC_CAPABILITIES;
+            struct packed{
+                struct packed{
+                    logic next;
+                    logic load_next;
                 } SOFT_RST;
                 struct packed{
                     logic next;
@@ -1811,6 +1817,11 @@ module I3CCSR (
             struct packed{
                 struct packed{
                     logic value;
+                } IBI_MDB_SUPPORT_PENDING_READ_EN;
+            } HC_CAPABILITIES;
+            struct packed{
+                struct packed{
+                    logic value;
                 } SOFT_RST;
                 struct packed{
                     logic value;
@@ -3081,6 +3092,29 @@ module I3CCSR (
         end
     end
     assign hwif_out.I3CBase.CONTROLLER_DEVICE_ADDR.DYNAMIC_ADDR_VALID.value = field_storage.I3CBase.CONTROLLER_DEVICE_ADDR.DYNAMIC_ADDR_VALID.value;
+    // Field: I3CCSR.I3CBase.HC_CAPABILITIES.IBI_MDB_SUPPORT_PENDING_READ_EN
+    always_comb begin
+        automatic logic [0:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.I3CBase.HC_CAPABILITIES.IBI_MDB_SUPPORT_PENDING_READ_EN.value;
+        load_next_c = '0;
+        if(decoded_reg_strb.I3CBase.HC_CAPABILITIES && decoded_req_is_wr) begin // SW write
+            next_c = (field_storage.I3CBase.HC_CAPABILITIES.IBI_MDB_SUPPORT_PENDING_READ_EN.value & ~decoded_wr_biten[9:9]) | (decoded_wr_data[9:9] & decoded_wr_biten[9:9]);
+            load_next_c = '1;
+        end
+        field_combo.I3CBase.HC_CAPABILITIES.IBI_MDB_SUPPORT_PENDING_READ_EN.next = next_c;
+        field_combo.I3CBase.HC_CAPABILITIES.IBI_MDB_SUPPORT_PENDING_READ_EN.load_next = load_next_c;
+    end
+    always_ff @(posedge clk or negedge hwif_in.rst_ni) begin
+        if(~hwif_in.rst_ni) begin
+            field_storage.I3CBase.HC_CAPABILITIES.IBI_MDB_SUPPORT_PENDING_READ_EN.value <= 1'h1;
+        end else begin
+            if(field_combo.I3CBase.HC_CAPABILITIES.IBI_MDB_SUPPORT_PENDING_READ_EN.load_next) begin
+                field_storage.I3CBase.HC_CAPABILITIES.IBI_MDB_SUPPORT_PENDING_READ_EN.value <= field_combo.I3CBase.HC_CAPABILITIES.IBI_MDB_SUPPORT_PENDING_READ_EN.next;
+            end
+        end
+    end
+    assign hwif_out.I3CBase.HC_CAPABILITIES.IBI_MDB_SUPPORT_PENDING_READ_EN.value = field_storage.I3CBase.HC_CAPABILITIES.IBI_MDB_SUPPORT_PENDING_READ_EN.value;
     // Field: I3CCSR.I3CBase.RESET_CONTROL.SOFT_RST
     always_comb begin
         automatic logic [0:0] next_c;
@@ -10179,7 +10213,8 @@ module I3CCSR (
     assign readback_array[3][5:5] = (decoded_reg_strb.I3CBase.HC_CAPABILITIES && !decoded_req_is_wr) ? 1'h0 : '0;
     assign readback_array[3][6:6] = (decoded_reg_strb.I3CBase.HC_CAPABILITIES && !decoded_req_is_wr) ? 1'h0 : '0;
     assign readback_array[3][7:7] = (decoded_reg_strb.I3CBase.HC_CAPABILITIES && !decoded_req_is_wr) ? 1'h0 : '0;
-    assign readback_array[3][9:8] = '0;
+    assign readback_array[3][8:8] = '0;
+    assign readback_array[3][9:9] = (decoded_reg_strb.I3CBase.HC_CAPABILITIES && !decoded_req_is_wr) ? field_storage.I3CBase.HC_CAPABILITIES.IBI_MDB_SUPPORT_PENDING_READ_EN.value : '0;
     assign readback_array[3][10:10] = (decoded_reg_strb.I3CBase.HC_CAPABILITIES && !decoded_req_is_wr) ? 1'h1 : '0;
     assign readback_array[3][11:11] = (decoded_reg_strb.I3CBase.HC_CAPABILITIES && !decoded_req_is_wr) ? 1'h0 : '0;
     assign readback_array[3][12:12] = (decoded_reg_strb.I3CBase.HC_CAPABILITIES && !decoded_req_is_wr) ? 1'h0 : '0;

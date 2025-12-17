@@ -124,6 +124,7 @@
             foreach(STANDBY_CR_CAP_bit_cg[bt]) this.STANDBY_CR_CAP_bit_cg[bt].sample(data[5 + bt]);
             foreach(HDR_DDR_EN_bit_cg[bt]) this.HDR_DDR_EN_bit_cg[bt].sample(data[6 + bt]);
             foreach(HDR_TS_EN_bit_cg[bt]) this.HDR_TS_EN_bit_cg[bt].sample(data[7 + bt]);
+            foreach(IBI_MDB_SUPPORT_PENDING_READ_EN_bit_cg[bt]) this.IBI_MDB_SUPPORT_PENDING_READ_EN_bit_cg[bt].sample(data[9 + bt]);
             foreach(CMD_CCC_DEFBYTE_bit_cg[bt]) this.CMD_CCC_DEFBYTE_bit_cg[bt].sample(data[10 + bt]);
             foreach(IBI_DATA_ABORT_EN_bit_cg[bt]) this.IBI_DATA_ABORT_EN_bit_cg[bt].sample(data[11 + bt]);
             foreach(IBI_CREDIT_COUNT_EN_bit_cg[bt]) this.IBI_CREDIT_COUNT_EN_bit_cg[bt].sample(data[12 + bt]);
@@ -134,7 +135,7 @@
             foreach(SG_CAPABILITY_DC_EN_bit_cg[bt]) this.SG_CAPABILITY_DC_EN_bit_cg[bt].sample(data[30 + bt]);
         end
         if (get_coverage(UVM_CVR_FIELD_VALS)) begin
-            this.fld_cg.sample( data[2:2]/*COMBO_COMMAND*/  ,  data[3:3]/*AUTO_COMMAND*/  ,  data[5:5]/*STANDBY_CR_CAP*/  ,  data[6:6]/*HDR_DDR_EN*/  ,  data[7:7]/*HDR_TS_EN*/  ,  data[10:10]/*CMD_CCC_DEFBYTE*/  ,  data[11:11]/*IBI_DATA_ABORT_EN*/  ,  data[12:12]/*IBI_CREDIT_COUNT_EN*/  ,  data[13:13]/*SCHEDULED_COMMANDS_EN*/  ,  data[21:20]/*CMD_SIZE*/  ,  data[28:28]/*SG_CAPABILITY_CR_EN*/  ,  data[29:29]/*SG_CAPABILITY_IBI_EN*/  ,  data[30:30]/*SG_CAPABILITY_DC_EN*/   );
+            this.fld_cg.sample( data[2:2]/*COMBO_COMMAND*/  ,  data[3:3]/*AUTO_COMMAND*/  ,  data[5:5]/*STANDBY_CR_CAP*/  ,  data[6:6]/*HDR_DDR_EN*/  ,  data[7:7]/*HDR_TS_EN*/  ,  data[9:9]/*IBI_MDB_SUPPORT_PENDING_READ_EN*/  ,  data[10:10]/*CMD_CCC_DEFBYTE*/  ,  data[11:11]/*IBI_DATA_ABORT_EN*/  ,  data[12:12]/*IBI_CREDIT_COUNT_EN*/  ,  data[13:13]/*SCHEDULED_COMMANDS_EN*/  ,  data[21:20]/*CMD_SIZE*/  ,  data[28:28]/*SG_CAPABILITY_CR_EN*/  ,  data[29:29]/*SG_CAPABILITY_IBI_EN*/  ,  data[30:30]/*SG_CAPABILITY_DC_EN*/   );
         end
     endfunction
 
@@ -145,6 +146,7 @@
             foreach(STANDBY_CR_CAP_bit_cg[bt]) this.STANDBY_CR_CAP_bit_cg[bt].sample(STANDBY_CR_CAP.get_mirrored_value() >> bt);
             foreach(HDR_DDR_EN_bit_cg[bt]) this.HDR_DDR_EN_bit_cg[bt].sample(HDR_DDR_EN.get_mirrored_value() >> bt);
             foreach(HDR_TS_EN_bit_cg[bt]) this.HDR_TS_EN_bit_cg[bt].sample(HDR_TS_EN.get_mirrored_value() >> bt);
+            foreach(IBI_MDB_SUPPORT_PENDING_READ_EN_bit_cg[bt]) this.IBI_MDB_SUPPORT_PENDING_READ_EN_bit_cg[bt].sample(IBI_MDB_SUPPORT_PENDING_READ_EN.get_mirrored_value() >> bt);
             foreach(CMD_CCC_DEFBYTE_bit_cg[bt]) this.CMD_CCC_DEFBYTE_bit_cg[bt].sample(CMD_CCC_DEFBYTE.get_mirrored_value() >> bt);
             foreach(IBI_DATA_ABORT_EN_bit_cg[bt]) this.IBI_DATA_ABORT_EN_bit_cg[bt].sample(IBI_DATA_ABORT_EN.get_mirrored_value() >> bt);
             foreach(IBI_CREDIT_COUNT_EN_bit_cg[bt]) this.IBI_CREDIT_COUNT_EN_bit_cg[bt].sample(IBI_CREDIT_COUNT_EN.get_mirrored_value() >> bt);
@@ -155,7 +157,7 @@
             foreach(SG_CAPABILITY_DC_EN_bit_cg[bt]) this.SG_CAPABILITY_DC_EN_bit_cg[bt].sample(SG_CAPABILITY_DC_EN.get_mirrored_value() >> bt);
         end
         if (get_coverage(UVM_CVR_FIELD_VALS)) begin
-            this.fld_cg.sample( COMBO_COMMAND.get_mirrored_value()  ,  AUTO_COMMAND.get_mirrored_value()  ,  STANDBY_CR_CAP.get_mirrored_value()  ,  HDR_DDR_EN.get_mirrored_value()  ,  HDR_TS_EN.get_mirrored_value()  ,  CMD_CCC_DEFBYTE.get_mirrored_value()  ,  IBI_DATA_ABORT_EN.get_mirrored_value()  ,  IBI_CREDIT_COUNT_EN.get_mirrored_value()  ,  SCHEDULED_COMMANDS_EN.get_mirrored_value()  ,  CMD_SIZE.get_mirrored_value()  ,  SG_CAPABILITY_CR_EN.get_mirrored_value()  ,  SG_CAPABILITY_IBI_EN.get_mirrored_value()  ,  SG_CAPABILITY_DC_EN.get_mirrored_value()   );
+            this.fld_cg.sample( COMBO_COMMAND.get_mirrored_value()  ,  AUTO_COMMAND.get_mirrored_value()  ,  STANDBY_CR_CAP.get_mirrored_value()  ,  HDR_DDR_EN.get_mirrored_value()  ,  HDR_TS_EN.get_mirrored_value()  ,  IBI_MDB_SUPPORT_PENDING_READ_EN.get_mirrored_value()  ,  CMD_CCC_DEFBYTE.get_mirrored_value()  ,  IBI_DATA_ABORT_EN.get_mirrored_value()  ,  IBI_CREDIT_COUNT_EN.get_mirrored_value()  ,  SCHEDULED_COMMANDS_EN.get_mirrored_value()  ,  CMD_SIZE.get_mirrored_value()  ,  SG_CAPABILITY_CR_EN.get_mirrored_value()  ,  SG_CAPABILITY_IBI_EN.get_mirrored_value()  ,  SG_CAPABILITY_DC_EN.get_mirrored_value()   );
         end
     endfunction
 

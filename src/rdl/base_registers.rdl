@@ -258,6 +258,20 @@ regfile BaseRegs #(
             reset = 1'b1;
         } CMD_CCC_DEFBYTE[10:10];
         field {
+            name = "IBI_MDB_SUPPORT_PENDING_READ_EN";
+            desc = "Set whether to flag IBI MDB support for pending read
+                to controller or not.
+                See Section 5.1.6.2.2 and Table 37 in Section 5.1.9.3.19
+                of the I3C Basic v1.1.1 specificaiton.
+
+                0 - Do not flag support for IBI MDB
+
+                1 - Flag support for IBI MDB";
+            sw = rw;
+            hw = r ;
+            reset = 1'b1;
+        } IBI_MDB_SUPPORT_PENDING_READ_EN[9:9];
+        field {
             name = "HDR_TS_EN";
             desc = "HDR-Ternary transfers:
 

@@ -199,6 +199,16 @@ reg_map = Munch.fromDict({
                 "rclr": 0,
                 "hwclr": 0
             },
+            "IBI_MDB_SUPPORT_PENDING_READ_EN": {
+                "low": 9,
+                "mask": 512,
+                "reset": 1,
+                "sw": "rw",
+                "hw": "r",
+                "woclr": 0,
+                "rclr": 0,
+                "hwclr": 0
+            },
             "CMD_CCC_DEFBYTE": {
                 "low": 10,
                 "mask": 1024,

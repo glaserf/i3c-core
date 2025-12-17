@@ -141,6 +141,7 @@ module controller_standby
     input logic [63:0] daa_unique_response_i,
     input logic ibi_enable_i,
     input logic [2:0] ibi_retry_num_i,
+    input logic ibi_mdb_support_i,
 
     output logic tx_host_nack_o,
     output logic tx_pr_end_o,
@@ -452,6 +453,7 @@ module controller_standby
       .target_hot_join_addr_i(target_hot_join_addr_i),
       .ibi_enable_i(ibi_enable_i),
       .ibi_retry_num_i(ibi_retry_num_i),
+      .ibi_mdb_support_i(ibi_mdb_support_i),
       .daa_unique_response_i(daa_unique_response_i),
       .tx_host_nack_o(i3c_tx_host_nack_o),
       .tx_pr_end_o(tx_pr_end_o),

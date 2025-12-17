@@ -291,6 +291,7 @@ module controller
 
   logic ibi_enable;
   logic [2:0] ibi_retry_num;
+  logic ibi_mdb_support_o;
 
   logic recovery_mode;
 
@@ -380,6 +381,7 @@ module controller
       .daa_unique_response_o           (daa_unique_response),
       .ibi_enable_o                    (ibi_enable),
       .ibi_retry_num_o                 (ibi_retry_num),
+      .ibi_mdb_support_o               (ibi_mdb_support),
       .set_mwl_i                       (set_mwl),
       .set_mrl_i                       (set_mrl),
       .set_ibil_i                      (set_ibil),
@@ -563,6 +565,7 @@ module controller
       .target_hot_join_addr_i(target_hot_join_addr),
       .ibi_enable_i(ibi_enable),
       .ibi_retry_num_i(ibi_retry_num),
+      .ibi_mdb_support_i(ibi_mdb_support),
       .daa_unique_response_i(daa_unique_response),
       .tx_host_nack_o(tti_tx_host_nack_o),
       .tx_pr_end_o(tti_tx_pr_end_o),

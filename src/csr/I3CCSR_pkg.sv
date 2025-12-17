@@ -1332,6 +1332,14 @@ package I3CCSR_pkg;
 
     typedef struct packed{
         logic value;
+    } I3CCSR__I3CBase__HC_CAPABILITIES__IBI_MDB_SUPPORT_PENDING_READ_EN__out_t;
+
+    typedef struct packed{
+        I3CCSR__I3CBase__HC_CAPABILITIES__IBI_MDB_SUPPORT_PENDING_READ_EN__out_t IBI_MDB_SUPPORT_PENDING_READ_EN;
+    } I3CCSR__I3CBase__HC_CAPABILITIES__out_t;
+
+    typedef struct packed{
+        logic value;
     } I3CCSR__I3CBase__RESET_CONTROL__SOFT_RST__out_t;
 
     typedef struct packed{
@@ -1519,6 +1527,7 @@ package I3CCSR_pkg;
     typedef struct packed{
         I3CCSR__I3CBase__HC_CONTROL__out_t HC_CONTROL;
         I3CCSR__I3CBase__CONTROLLER_DEVICE_ADDR__out_t CONTROLLER_DEVICE_ADDR;
+        I3CCSR__I3CBase__HC_CAPABILITIES__out_t HC_CAPABILITIES;
         I3CCSR__I3CBase__RESET_CONTROL__out_t RESET_CONTROL;
         I3CCSR__I3CBase__INTR_STATUS__out_t INTR_STATUS;
         I3CCSR__I3CBase__INTR_STATUS_ENABLE__out_t INTR_STATUS_ENABLE;

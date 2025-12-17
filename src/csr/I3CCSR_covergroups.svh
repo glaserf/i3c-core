@@ -113,6 +113,7 @@
     input bit [1-1:0] STANDBY_CR_CAP,
     input bit [1-1:0] HDR_DDR_EN,
     input bit [1-1:0] HDR_TS_EN,
+    input bit [1-1:0] IBI_MDB_SUPPORT_PENDING_READ_EN,
     input bit [1-1:0] CMD_CCC_DEFBYTE,
     input bit [1-1:0] IBI_DATA_ABORT_EN,
     input bit [1-1:0] IBI_CREDIT_COUNT_EN,
@@ -128,6 +129,7 @@
         STANDBY_CR_CAP_cp : coverpoint STANDBY_CR_CAP;
         HDR_DDR_EN_cp : coverpoint HDR_DDR_EN;
         HDR_TS_EN_cp : coverpoint HDR_TS_EN;
+        IBI_MDB_SUPPORT_PENDING_READ_EN_cp : coverpoint IBI_MDB_SUPPORT_PENDING_READ_EN;
         CMD_CCC_DEFBYTE_cp : coverpoint CMD_CCC_DEFBYTE;
         IBI_DATA_ABORT_EN_cp : coverpoint IBI_DATA_ABORT_EN;
         IBI_CREDIT_COUNT_EN_cp : coverpoint IBI_CREDIT_COUNT_EN;

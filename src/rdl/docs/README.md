@@ -159,21 +159,22 @@ Don't override. Generated from: I3CCSR
 - Base Offset: 0xC
 - Size: 0x4
 
-| Bits|      Identifier     |Access|Reset|         Name        |
-|-----|---------------------|------|-----|---------------------|
-|  2  |    COMBO_COMMAND    |   r  | 0x0 |    COMBO_COMMAND    |
-|  3  |     AUTO_COMMAND    |   r  | 0x0 |     AUTO_COMMAND    |
-|  5  |    STANDBY_CR_CAP   |   r  | 0x0 |    STANDBY_CR_CAP   |
-|  6  |      HDR_DDR_EN     |   r  | 0x0 |      HDR_DDR_EN     |
-|  7  |      HDR_TS_EN      |   r  | 0x0 |      HDR_TS_EN      |
-|  10 |   CMD_CCC_DEFBYTE   |   r  | 0x1 |   CMD_CCC_DEFBYTE   |
-|  11 |  IBI_DATA_ABORT_EN  |   r  | 0x0 |  IBI_DATA_ABORT_EN  |
-|  12 | IBI_CREDIT_COUNT_EN |   r  | 0x0 | IBI_CREDIT_COUNT_EN |
-|  13 |SCHEDULED_COMMANDS_EN|   r  | 0x0 |SCHEDULED_COMMANDS_EN|
-|21:20|       CMD_SIZE      |   r  | 0x0 |       CMD_SIZE      |
-|  28 | SG_CAPABILITY_CR_EN |   r  | 0x0 | SG_CAPABILITY_CR_EN |
-|  29 | SG_CAPABILITY_IBI_EN|   r  | 0x0 | SG_CAPABILITY_IBI_EN|
-|  30 | SG_CAPABILITY_DC_EN |   r  | 0x0 | SG_CAPABILITY_DC_EN |
+| Bits|           Identifier          |Access|Reset|              Name             |
+|-----|-------------------------------|------|-----|-------------------------------|
+|  2  |         COMBO_COMMAND         |   r  | 0x0 |         COMBO_COMMAND         |
+|  3  |          AUTO_COMMAND         |   r  | 0x0 |          AUTO_COMMAND         |
+|  5  |         STANDBY_CR_CAP        |   r  | 0x0 |         STANDBY_CR_CAP        |
+|  6  |           HDR_DDR_EN          |   r  | 0x0 |           HDR_DDR_EN          |
+|  7  |           HDR_TS_EN           |   r  | 0x0 |           HDR_TS_EN           |
+|  9  |IBI_MDB_SUPPORT_PENDING_READ_EN|  rw  | 0x1 |IBI_MDB_SUPPORT_PENDING_READ_EN|
+|  10 |        CMD_CCC_DEFBYTE        |   r  | 0x1 |        CMD_CCC_DEFBYTE        |
+|  11 |       IBI_DATA_ABORT_EN       |   r  | 0x0 |       IBI_DATA_ABORT_EN       |
+|  12 |      IBI_CREDIT_COUNT_EN      |   r  | 0x0 |      IBI_CREDIT_COUNT_EN      |
+|  13 |     SCHEDULED_COMMANDS_EN     |   r  | 0x0 |     SCHEDULED_COMMANDS_EN     |
+|21:20|            CMD_SIZE           |   r  | 0x0 |            CMD_SIZE           |
+|  28 |      SG_CAPABILITY_CR_EN      |   r  | 0x0 |      SG_CAPABILITY_CR_EN      |
+|  29 |      SG_CAPABILITY_IBI_EN     |   r  | 0x0 |      SG_CAPABILITY_IBI_EN     |
+|  30 |      SG_CAPABILITY_DC_EN      |   r  | 0x0 |      SG_CAPABILITY_DC_EN      |
 
 #### COMBO_COMMAND field
 
@@ -204,6 +205,15 @@ Don't override. Generated from: I3CCSR
 <p>HDR-Ternary transfers:</p>
 <p>0 - not supported</p>
 <p>1 - supported</p>
+
+#### IBI_MDB_SUPPORT_PENDING_READ_EN field
+
+<p>Set whether to flag IBI MDB support for pending read
+to controller or not.
+See Section 5.1.6.2.2 and Table 37 in Section 5.1.9.3.19
+of the I3C Basic v1.1.1 specificaiton.</p>
+<p>0 - Do not flag support for IBI MDB</p>
+<p>1 - Flag support for IBI MDB</p>
 
 #### CMD_CCC_DEFBYTE field
 

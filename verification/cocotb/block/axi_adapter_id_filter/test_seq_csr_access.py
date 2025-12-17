@@ -133,18 +133,20 @@ async def write_should_not_affect_ro_csr(dut, disable_id_filtering=False, priv_i
 
     tb = await initialize_dut(dut, disable_id_filtering, priv_ids)
 
-    addr = tb.reg_map.I3CBASE.HC_CAPABILITIES.base_addr
+    # The test expects all bits of the register below to be read-only.
+    # Be careful when changing the register map.
+    addr = tb.reg_map.PIOCONTROL.QUEUE_SIZE.base_addr
 
-    hc_cap = await tb.read_csr(addr, arid=priv_ids[0])
-    neg_hc_cap = list(map(lambda x: 0xFF - x, hc_cap))
-    await tb.write_csr(addr, neg_hc_cap, awid=tid)
+    queue_size = await tb.read_csr(addr, arid=priv_ids[0])
+    # Negate each byte of the read value and try to write this back
+    neg_queue_size = list(map(lambda x: 0xFF - x, queue_size))
+    await tb.write_csr(addr, neg_queue_size, awid=tid)
     resp = await tb.read_csr(addr, arid=tid)
 
     if tid not in priv_ids and not disable_id_filtering:
-        hc_cap = int2bytes(0)
+        queue_size = int2bytes(0)
 
-    compare_values(hc_cap, resp, addr)
-
+    compare_values(queue_size, resp, addr)
 
 @cocotb.test()
 async def test_write_should_not_affect_ro_csr_filter_off(dut):

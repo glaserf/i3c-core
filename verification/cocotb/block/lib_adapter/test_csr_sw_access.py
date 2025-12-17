@@ -116,13 +116,16 @@ async def test_write_should_not_affect_ro_csr(dut: SimHandleBase):
     tb = get_frontend_bus_if()(dut)
     await tb.register_test_interfaces()
 
-    addr = tb.reg_map.I3CBASE.HC_CAPABILITIES.base_addr
+    # The test expects all bits of the register below to be read-only.
+    # Be careful when changing the register map.
+    addr = tb.reg_map.PIOCONTROL.QUEUE_SIZE.base_addr
 
-    hc_cap = await tb.read_csr(addr)
-    neg_hc_cap = list(map(lambda x: 0xFF - x, hc_cap))
-    await tb.write_csr(addr, neg_hc_cap)
+    queue_size = await tb.read_csr(addr)
+    # Negate each byte of the read value and try to write this back
+    neg_queue_size = list(map(lambda x: 0xFF - x, queue_size))
+    await tb.write_csr(addr, neg_queue_size)
     resp = await tb.read_csr(addr)
-    compare_values(hc_cap, resp, addr)
+    compare_values(queue_size, resp, addr)
 
 
 @cocotb.test()
