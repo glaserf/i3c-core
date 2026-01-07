@@ -178,22 +178,9 @@ module controller_standby_i3c
   bus_tx_req_t bus_tx_req, bus_tx_req_fsm, bus_tx_req_ccc, bus_tx_req_ibi;
   bus_tx_rsp_t bus_tx_rsp, bus_tx_rsp_fsm, bus_tx_rsp_ccc, bus_tx_rsp_ibi;
 
-  logic ibi_bus_tx_req_err;
-  logic ibi_bus_tx_done;
-  logic ibi_bus_tx_idle;
-  logic ibi_bus_tx_req_byte;
-  logic ibi_bus_tx_req_bit;
-  logic [7:0] ibi_bus_tx_req_value;
-  logic ibi_bus_tx_sel_od_pp;
-
   // Bus RX flow
   bus_rx_req_t bus_rx_req, bus_rx_req_fsm, bus_rx_req_ccc, bus_rx_req_ibi;
   bus_rx_rsp_t bus_rx_rsp, bus_rx_rsp_fsm, bus_rx_rsp_ccc, bus_rx_rsp_ibi;
-
-  logic ibi_bus_rx_req_bit;
-  logic ibi_bus_rx_req_byte;
-  logic ibi_bus_rx_done;
-  logic [7:0] ibi_bus_rx_data;
 
   // TX Queue interface
   logic tx_desc_avail;
@@ -305,12 +292,6 @@ module controller_standby_i3c
     bus_rx_rsp_ccc = '{default: '0};
     bus_rx_rsp_ibi = '{default: '0};
 
-    ibi_bus_tx_req_err = '0;
-    ibi_bus_tx_done    = '0;
-    ibi_bus_tx_idle    = '0;
-    ibi_bus_rx_done    = '0;
-    ibi_bus_rx_data    = '0;
-
     unique case (xfer_mux_sel)
       Fsm: begin
         bus_tx_req = bus_tx_req_fsm;
@@ -332,20 +313,6 @@ module controller_standby_i3c
 
         bus_tx_rsp_ibi = bus_tx_rsp;
         bus_rx_rsp_ibi = bus_rx_rsp;
-
-        ibi_bus_tx_req_err = bus_tx_rsp.error; // unused
-        ibi_bus_tx_done    = bus_tx_rsp.done;
-        ibi_bus_tx_idle    = bus_tx_rsp.idle;    // unused
-        bus_tx_req.req_byte   = ibi_bus_tx_req_byte;
-        bus_tx_req.req_bit    = ibi_bus_tx_req_bit;
-        bus_tx_req.data       = ibi_bus_tx_req_value;
-        bus_tx_req.drive_type = ibi_bus_tx_sel_od_pp;
-
-        ibi_bus_rx_done     = bus_rx_rsp.done;
-        // No idle signal for ibi_bus
-        ibi_bus_rx_data     = bus_rx_rsp.data;
-        bus_rx_req.req_bit  = ibi_bus_rx_req_bit;
-        bus_rx_req.req_byte = ibi_bus_rx_req_byte;
       end
       default: ;
     endcase
@@ -579,18 +546,11 @@ module controller_standby_i3c
     .ibi_byte_i      (ibi_fifo_rdata),
     .ibi_byte_last_i (ibi_last_byte),
 
-    .bus_tx_done_i     (ibi_bus_tx_done),
+    .bus_tx_req_o(bus_tx_req_ibi),
+    .bus_tx_rsp_i(bus_tx_rsp_ibi),
 
-    .bus_tx_req_byte_o (ibi_bus_tx_req_byte),
-    .bus_tx_req_bit_o  (ibi_bus_tx_req_bit),
-    .bus_tx_req_value_o(ibi_bus_tx_req_value),
-    .bus_tx_sel_od_pp_o(ibi_bus_tx_sel_od_pp),
-
-    .bus_rx_done_i     (ibi_bus_rx_done),
-
-    .bus_rx_req_byte_o (ibi_bus_rx_req_byte),
-    .bus_rx_req_bit_o  (ibi_bus_rx_req_bit),
-    .bus_rx_req_value_i(ibi_bus_rx_data),
+    .bus_rx_req_o(bus_rx_req_ibi),
+    .bus_rx_rsp_i(bus_rx_rsp_ibi),
 
     .t_hd_dat_i(t_hd_dat_i)
   );
@@ -771,4 +731,5 @@ module controller_standby_i3c
   // Escalate reset for reset action 0x2 or when we receive 2nd Target Reset Pattern
   assign escalated_reset = ((rst_action_o == 8'h2) & rst_action_valid_o) |
                              (target_reset_detect & escalate_reset & ~rstact_armed);
+
 endmodule

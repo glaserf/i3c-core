@@ -13,6 +13,8 @@ $(info From common.mk, CURDIR is $(CURDIR))
 
 # Set pythonpath so that tests can access common modules
 export PYTHONPATH := $(PYTHONPATH):$(CURDIR)/common
+# Fix the seed for now to reproduce failures reliably
+export RANDOM_SEED := 1
 
 # Add empty file to common sources to enforce configuration build before running the tests
 COMMON_SOURCES += $(TEST_DIR)/sim_build/i3c_config.vh

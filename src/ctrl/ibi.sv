@@ -14,55 +14,50 @@
     begin_i.
 */
 module ibi import i3c_pkg::*; (
+  input  logic clk_i,
+  input  logic rst_ni,
 
-    input logic clk_i,
-    input logic rst_ni,
+  // Control / status
+  input  logic [2:0] ibi_retry_num_i,  // TTI.CONTROL.IBI_RETRY_NUM
+  input  logic       ibi_abort_i,      // Aborts IBI and flushes TTI IBI Queue
 
-    // Control / status
-    input logic [2:0] ibi_retry_num_i,  // TTI.CONTROL.IBI_RETRY_NUM
-    input logic       ibi_abort_i,      // Aborts IBI and flushes TTI IBI Queue
+  output logic [1:0] ibi_status_o,    // TTI.STATUS.LAST_IBI_STATUS
+  output logic       ibi_status_we_o, // IBI status write enable
 
-    output logic [1:0] ibi_status_o,    // TTI.STATUS.LAST_IBI_STATUS
-    output logic       ibi_status_we_o, // IBI status write enable
+  input  logic begin_i,  // Begin driving the IBI
+  output logic done_o,   // FSM is done with the IBI
 
-    input  logic begin_i,  // Begin driving the IBI
-    output logic done_o,   // FSM is done with the IBI
+  // IBI address
+  input  logic [6:0] target_ibi_addr_i,
+  input  logic       target_ibi_addr_valid_i,
 
-    // IBI address
-    input logic [6:0] target_ibi_addr_i,
-    input logic       target_ibi_addr_valid_i,
+  // IBI data interface
+  input  logic      ibi_byte_valid_i,
+  output logic      ibi_byte_ready_o,
+  input  i3c_byte_t ibi_byte_i,
+  input  logic      ibi_byte_last_i,
 
-    // IBI data interface
-    input  logic       ibi_byte_valid_i,
-    output logic       ibi_byte_ready_o,
-    input  logic [7:0] ibi_byte_i,
-    input  logic       ibi_byte_last_i,
+  // Bus Monitor interface
+  input  logic scl_negedge_i,
+  input  logic scl_posedge_i,
+  input  logic bus_available_i,
+  input  logic bus_stop_i,
+  input  logic bus_rstart_i,
+  input  logic arbitration_lost_i,
 
-    // Bus Monitor interface
-    input logic scl_negedge_i,
-    input logic scl_posedge_i,
-    input logic bus_available_i,
-    input logic bus_stop_i,
-    input logic bus_rstart_i,
-    input logic arbitration_lost_i,
+  // Bus Tx interface
+  output bus_tx_req_t bus_tx_req_o,
+  input  bus_tx_rsp_t bus_tx_rsp_i,
 
-    // Bus TX interface
-    input logic bus_tx_done_i,
-    output logic bus_tx_req_byte_o,
-    output logic bus_tx_req_bit_o,
-    output logic [7:0] bus_tx_req_value_o,
-    output logic bus_tx_sel_od_pp_o,
+  // Bus Rx interface
+  output bus_rx_req_t bus_rx_req_o,
+  input  bus_rx_rsp_t bus_rx_rsp_i,
 
-    // Bus RX interface
-    input logic bus_rx_done_i,
-    output logic bus_rx_req_byte_o,
-    output logic bus_rx_req_bit_o,
-    input logic [7:0] bus_rx_req_value_i,
+  // Bus drive interface
+  input  i3c_timeparam_t t_hd_dat_i,
 
-    // Bus drive interface
-    input  i3c_timeparam_t t_hd_dat_i,
-
-    output logic sda_o
+  // SDA out for initial zero-pulse
+  output logic sda_o
 );
 
   // IBI status codes
@@ -77,6 +72,8 @@ module ibi import i3c_pkg::*; (
 
   logic [2:0] ibi_retry_cnt_q, ibi_retry_cnt_d;
   logic       ibi_can_retry;
+
+  i3c_byte_t bus_tx_req_value;
 
   logic bus_rx_req_nack;
 
@@ -134,22 +131,27 @@ module ibi import i3c_pkg::*; (
   end
 
   // Nack by controller is LSB of received data
-  assign bus_rx_req_nack = bus_rx_req_value_i[0];
+  assign bus_rx_req_nack = bus_rx_rsp_i.data[0];
 
   // Retry allowed if count not yet met or indefinite attempts allowed
   assign ibi_can_retry = (ibi_retry_num_i == 3'd7) || (ibi_retry_num_i != ibi_retry_cnt_q);
 
-  assign bus_tx_req_byte_o = (state_q inside {DriveAddr, SendData});
-  assign bus_tx_req_bit_o  = (state_q == SendTbit);
-  assign bus_tx_sel_od_pp_o= (state_q inside {SendData, SendTbit});
+  assign bus_tx_req_o = '{
+    drive_type: (state_q inside {SendData, SendTbit}) ? PushPull : OpenDrain,
+    req_byte:   (state_q inside {DriveAddr, SendData}),
+    req_bit:    (state_q == SendTbit),
+    data:       bus_tx_req_value
+  };
 
-  assign bus_rx_req_byte_o = 1'b0;
-  assign bus_rx_req_bit_o  = (state_q == ReadAck);
+  assign bus_rx_req_o = '{
+    req_bit:  (state_q == ReadAck),
+    req_byte: 1'b0
+  };
 
   always_comb begin : fsm_ibi
-    bus_tx_req_value_o = '0;
-    ibi_byte_ready_o   = 1'b0;
-    ibi_status_we_o    = 1'b0;
+    bus_tx_req_value = '0;
+    ibi_byte_ready_o = 1'b0;
+    ibi_status_we_o  = 1'b0;
 
     done_o = 1'b0;
     sda_o  = 1'b1;
@@ -183,11 +185,11 @@ module ibi import i3c_pkg::*; (
         end
       end
       DriveAddr: begin
-        bus_tx_req_value_o = {target_ibi_addr_i, 1'b1};
+        bus_tx_req_value = {target_ibi_addr_i, 1'b1};
 
         if (bus_stop_i) begin
           state_d = Done;
-        end else if (bus_tx_done_i) begin
+        end else if (bus_tx_rsp_i.done) begin
           state_d = ReadAck;
         end else if (arbitration_lost_i) begin
           done_o  = 1'b1;
@@ -197,7 +199,7 @@ module ibi import i3c_pkg::*; (
       ReadAck: begin
         if (bus_stop_i) begin
           state_d = Done;
-        end else if (bus_rx_done_i) begin
+        end else if (bus_rx_rsp_i.done) begin
           if (bus_rx_req_nack) begin
             ibi_status_d = (ibi_status_q == IbiSuccess) ? IbiFailureNack : IbiFailureRetry;
             state_d = WaitStopOrRstart;
@@ -210,12 +212,12 @@ module ibi import i3c_pkg::*; (
         if (scl_negedge_i) state_d = SendData;
       end
       SendData: begin
-        bus_tx_req_value_o = ibi_byte_i;
+        bus_tx_req_value = ibi_byte_i;
 
         if (bus_stop_i) begin
           ibi_status_d = (ibi_status_q == IbiSuccess) ? IbiFailurePartialData : IbiFailureRetry;
           state_d = Flush;
-        end else if (bus_tx_done_i) begin
+        end else if (bus_tx_rsp_i.done) begin
           if (ibi_byte_last_i) begin
             ibi_status_d = IbiSuccess;
           end
@@ -223,13 +225,13 @@ module ibi import i3c_pkg::*; (
         end
       end
       SendTbit: begin
-        bus_tx_req_value_o = 8'(!ibi_byte_last_i);
-        ibi_byte_ready_o   = bus_tx_done_i;
+        bus_tx_req_value = 8'(!ibi_byte_last_i);
+        ibi_byte_ready_o = bus_tx_rsp_i.done;
 
         if (bus_stop_i) begin
           ibi_status_d = (ibi_status_q == IbiSuccess) ? IbiFailurePartialData : IbiFailureRetry;
           state_d = Flush;
-        end else if (bus_tx_done_i) begin
+        end else if (bus_tx_rsp_i.done) begin
           state_d = ibi_byte_last_i ? Done : SendData;
         end
       end
