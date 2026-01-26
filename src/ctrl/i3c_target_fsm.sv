@@ -230,6 +230,7 @@ module i3c_target_fsm import i3c_pkg::*; #(
     drive_type: OpenDrain, // TODO Set OD/PP in correct states
     req_byte:   bus_tx_req_byte,
     req_bit:    bus_tx_req_bit,
+    req_ibi:    1'b0,
     data:       bus_tx_req_data
   };
 
@@ -437,12 +438,12 @@ module i3c_target_fsm import i3c_pkg::*; #(
         tx_pr_start_o = !is_rsvd_byte_match && is_any_addr_match && bus_rnw_q;
 
         if (is_rsvd_byte_match || is_any_addr_match) begin
-           // Do not ACK transaction if it is a read and we don't have data to send
-           if (~tx_desc_avail_i && bus_rnw_q) begin
-             state_d = WaitStart;
-           end else begin
-             state_d = TxAckFByte;
-           end
+          // Do not ACK transaction if it is a read and we don't have data to send
+          if (~tx_desc_avail_i && bus_rnw_q) begin
+            state_d = WaitStart;
+          end else begin
+            state_d = TxAckFByte;
+          end
         end else begin
           // Nothing on the bus happened which requires our action; wait for next (Re)Start condition.
           state_d = WaitStart;

@@ -315,7 +315,7 @@ module controller_standby_i3c
   end
 
   always_comb begin
-    bus_tx_req = '{drive_type: OpenDrain, req_byte: 1'b0, req_bit: 1'b0, data: 8'h0};
+    bus_tx_req = '{drive_type: OpenDrain, default: '0};
     bus_rx_req = '{default: '0};
 
     bus_tx_rsp_fsm = '{default: '0};
@@ -352,11 +352,6 @@ module controller_standby_i3c
     endcase
   end
 
-  // Allow IBI module to pull SDA
-  logic ibi_sda;
-  logic tx_sda;
-
-  assign ctrl_sda_o = tx_sda & ibi_sda;
 
   // Target FSM
   i3c_target_fsm #(
@@ -578,8 +573,6 @@ module controller_standby_i3c
     .bus_available_i(bus_available),
     .arbitration_lost_i,
 
-    .sda_o(ibi_sda),
-
     .begin_i(ibi_begin),
     .done_o (ibi_done),
 
@@ -600,9 +593,7 @@ module controller_standby_i3c
     .bus_tx_rsp_i(bus_tx_rsp_ibi),
 
     .bus_rx_req_o(bus_rx_req_ibi),
-    .bus_rx_rsp_i(bus_rx_rsp_ibi),
-
-    .t_hd_dat_i(t_hd_dat_i)
+    .bus_rx_rsp_i(bus_rx_rsp_ibi)
   );
 
   // An IBI is pending as long as the descriptor_ibi has something to send to
@@ -623,12 +614,10 @@ module controller_standby_i3c
     .scl_posedge_i   (ctrl_bus_i.scl.pos_edge),
     .scl_stable_low_i(ctrl_bus_i.scl.stable_low),
 
-    .sda_o(tx_sda),
+    .sda_o(ctrl_sda_o),
 
     .tx_req_i(bus_tx_req),
-    .tx_rsp_o(bus_tx_rsp),
-
-    .bus_error_o(/* unused */)
+    .tx_rsp_o(bus_tx_rsp)
   );
 
   bus_rx_flow xbus_rx_flow (

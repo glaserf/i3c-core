@@ -152,6 +152,7 @@ package i3c_pkg;
     i3c_drive_e drive_type;
     logic       req_byte;
     logic       req_bit;
+    logic       req_ibi;
     i3c_byte_t  data;
   } bus_tx_req_t;
 

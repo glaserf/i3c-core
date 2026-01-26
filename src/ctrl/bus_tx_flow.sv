@@ -39,8 +39,6 @@ module bus_tx_flow import i3c_pkg::*; (
   // Tx response out
   output bus_tx_rsp_t tx_rsp_o,
 
-  output logic bus_error_o, // Unused
-
   // Open Drain / Push Pull
   output logic sel_od_pp_o,
 
@@ -54,14 +52,13 @@ module bus_tx_flow import i3c_pkg::*; (
   logic       bit_counter_en;
   logic [3:0] bit_counter_q, bit_counter_d;
 
-  logic [1:0] reqs;
+  logic [2:0] reqs;
   logic       req_any;
-  i3c_byte_t  req_value_q, req_value_d; // TODO rename req_data ?
+  i3c_byte_t  req_value_q, req_value_d;
 
-  logic tx_idle;
   logic tx_done; // Indicates finished bit write
   logic bus_tx_done;
-  logic req_error, bus_error, error;
+  logic req_error;
 
   typedef enum logic [2:0] {
     Idle,
@@ -73,32 +70,27 @@ module bus_tx_flow import i3c_pkg::*; (
 
   tx_state_e state_d, state_q;
 
-  assign reqs    = {tx_req_i.req_byte, tx_req_i.req_bit};
+  assign reqs    = {tx_req_i.req_byte, tx_req_i.req_bit, tx_req_i.req_ibi};
   assign req_any = |reqs;
   // Clever way to ensure that only one bit is HIGH
   // Source: https://stackoverflow.com/a/11235598
   // It might be optimized if we're sure there are only 2 requests at most
   assign req_error = ~(~|(reqs & (reqs - 1)));
 
-  // TODO: Connect to bus_tx module error output signal
-  assign bus_error = '0;
-  assign error = req_error | bus_error;
 
   always_comb begin
     bit_counter_d = bit_counter_q;
-    //req_value_d   = req_value_q;
 
     if (bit_counter_en) begin
       if (tx_done) begin
         bit_counter_d = (bit_counter_q == 4'd0) ? 4'd7 : bit_counter_q - 1;
-        //req_value_d   = {req_value_q[6:0], 1'b1}; // shift left
       end
     end else begin
       bit_counter_d = 4'd7;
-      //req_value_d   = (bit_counter_q == 4'd7) ? tx_req_i.data : '1;
     end
   end
 
+  // SDA is simply the MSB of the data shift register. No further logic or muxing.
   assign sda_o = req_value_q[7];
 
   always_comb begin : tx_fsm
@@ -114,14 +106,20 @@ module bus_tx_flow import i3c_pkg::*; (
     unique case (state_q)
       Idle: begin
         if (req_any) begin
+          if (tx_req_i.req_ibi) begin
+            // Drive 0 in OD on SDA and wait until the controller gives us a negedge on SCL
+            // TODO If there is a regular Start by the controller, we do not need to drive SDA low
+            // on our own!
+            req_value_d[7] = 1'b0;
+          end
           if (scl_negedge_i || scl_stable_low_i) begin
             req_value_d[7]   = tx_req_i.data[7];
-            req_value_d[6:0] = tx_req_i.req_byte ? tx_req_i.data[6:0] : '1;
-            if (tx_req_i.req_byte) begin
+            req_value_d[6:0] = tx_req_i.req_bit ? '1 : tx_req_i.data[6:0];
+            if (tx_req_i.req_bit) begin
+              state_d = WaitPosEdge;
+            end else begin
               bit_counter_en = 1'b1;
               state_d = DriveByte;
-            end else begin
-              state_d = WaitPosEdge;
             end
           end else begin
             state_d = WaitNegEdge;
@@ -131,17 +129,17 @@ module bus_tx_flow import i3c_pkg::*; (
       WaitNegEdge: begin
         if (scl_negedge_i) begin
           req_value_d[7]   = tx_req_i.data[7];
-          req_value_d[6:0] = tx_req_i.req_byte ? tx_req_i.data[6:0] : '1;
-          if (tx_req_i.req_byte) begin
+          req_value_d[6:0] = tx_req_i.req_bit ? '1 : tx_req_i.data[6:0];
+          if (tx_req_i.req_bit) begin
+            state_d = WaitPosEdge;
+          end else begin
             bit_counter_en = 1'b1;
             state_d = DriveByte;
-          end else begin
-            state_d = WaitPosEdge;
           end
         end
       end
       DriveByte: begin
-        if (tx_req_i.req_byte) begin
+        if (tx_req_i.req_byte || tx_req_i.req_ibi) begin
           bit_counter_en = 1'b1;
           // Simply wait for next edge
           if (scl_negedge_i) begin
@@ -153,7 +151,8 @@ module bus_tx_flow import i3c_pkg::*; (
             end
           end
         end else begin
-          // Requester cancelled the transaction, e.g., a bus stop condition has occurred
+          // Requester cancelled the transaction, e.g., a bus stop condition has occurred or
+          // arbitration was lost during the address phase.
           req_value_d = '1;
           state_d = Idle;
         end
@@ -171,12 +170,12 @@ module bus_tx_flow import i3c_pkg::*; (
         if (req_any) begin
           if (scl_negedge_i) begin
             req_value_d[7]   = tx_req_i.data[7];
-            req_value_d[6:0] = tx_req_i.req_byte ? tx_req_i.data[6:0] : '1;
-            if (tx_req_i.req_byte) begin
+            req_value_d[6:0] = tx_req_i.req_bit ? '1 : tx_req_i.data[6:0];
+            if (tx_req_i.req_bit) begin
+              state_d = WaitPosEdge;
+            end else begin
               bit_counter_en = 1'b1;
               state_d = DriveByte;
-            end else begin
-              state_d = WaitPosEdge;
             end
           end
         end else begin
@@ -190,27 +189,10 @@ module bus_tx_flow import i3c_pkg::*; (
     endcase
 
     // Allow to abort and go back to Idle if needed
-    if (error) begin
+    if (req_error) begin
       state_d = Idle;
     end
   end
-
-  // TODO Can most probably be removed altogether
-  bus_tx xbus_tx (
-    .clk_i,
-    .rst_ni,
-    .t_r_i,
-    .t_su_dat_i,
-    .t_hd_dat_i,
-    .drive_i(drive_bit_en),
-    .drive_value_i(drive_bit_value),
-    .scl_negedge_i,
-    .scl_posedge_i,
-    .scl_stable_low_i,
-    .tx_idle_o(tx_idle),
-    .tx_done_o(),
-    .sda_o()
-  );
 
   assign tx_rsp_o = '{
     error: req_error,
@@ -218,8 +200,7 @@ module bus_tx_flow import i3c_pkg::*; (
     done:  bus_tx_done
   };
 
-  assign bus_error_o = bus_error;
-  assign sel_od_pp_o = tx_req_i.drive_type; // Feedthrough for now
+  assign sel_od_pp_o = tx_req_i.drive_type; // TODO FIXME - Feedthrough for now
 
   // Sequential process for all flops
   always_ff @(posedge clk_i or negedge rst_ni) begin

@@ -86,6 +86,7 @@ def _verify(session, test_group, test_type, test_name, coverage=None, simulator=
                 "make",
                 "-C",
                 test.testPath,
+                "clean",
                 "all",
                 "MODULE=" + test_name,
                 "COCOTB_RESULTS_FILE=" + test.filenames["xml"],
